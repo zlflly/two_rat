@@ -249,7 +249,7 @@ function handleCollisionsAndUpdates() {
         }
         if (playerHit) {
             gameState.health--;
-            // 可以在这里添加玩家受伤音效等反馈
+            showDamageWarning(); // 触发掉血提示效果
         }
     }
 
@@ -281,7 +281,7 @@ function handleCollisionsAndUpdates() {
         }
         if (playerHit) {
             gameState.health--;
-            // 可以在这里添加玩家受伤音效等反馈
+            showDamageWarning(); // 触发掉血提示效果
         }
     }
     

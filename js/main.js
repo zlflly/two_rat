@@ -12,6 +12,8 @@ const messageContent = document.getElementById('message-content');
 const messageButton = document.getElementById('message-button');
 const geminiTipButton = document.getElementById('gemini-tip-button');
 const spinner = document.getElementById('spinner');
+const damageOverlay = document.getElementById('damage-overlay');
+const damageWarning = document.getElementById('damage-warning');
 
 // --- 颜色配置 ---
 const MAP_COLORS = {
@@ -60,6 +62,28 @@ function gameLoop() {
 function init() {
     geminiTipButton.onclick = getGeminiTip; // 绑定事件监听器
     resetGame(); // 启动游戏
+}
+
+// --- 掉血提示效果 ---
+function showDamageWarning() {
+    // 随机选择警告文本，增加压力感
+    const warnings = ['危险！', '受伤了！', '小心！', '血量不足！', '快逃！'];
+    const randomWarning = warnings[Math.floor(Math.random() * warnings.length)];
+    damageWarning.textContent = randomWarning;
+    
+    // 显示掉血效果
+    damageOverlay.classList.add('show');
+    
+    // 1.5秒后移除效果
+    setTimeout(() => {
+        damageOverlay.classList.remove('show');
+    }, 1500);
+    
+    // 添加屏幕震动效果（通过CSS transform）
+    document.body.style.animation = 'shake 0.5s ease-in-out';
+    setTimeout(() => {
+        document.body.style.animation = '';
+    }, 500);
 }
 
 // --- 启动游戏 ---
