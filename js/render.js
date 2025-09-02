@@ -3,6 +3,20 @@ function renderMap(ctx, map) {
     ctx.fillStyle = MAP_COLORS.background;
     ctx.fillRect(0, 0, canvas1.width, canvas1.height);
 
+    // 1. 首先绘制实心的紫色边界方块，作为不可通行区域
+    ctx.fillStyle = MAP_COLORS.wall; // 使用墙的颜色
+    const blockSize = GRID_SIZE;
+    const totalSize = MAP_SIZE * GRID_SIZE;
+    
+    // 绘制顶部和底部的实心条
+    ctx.fillRect(0, -blockSize, totalSize, blockSize); // 顶部条 (在地图上方)
+    ctx.fillRect(0, totalSize, totalSize, blockSize);  // 底部条 (在地图下方)
+    
+    // 绘制左侧和右侧的实心条
+    ctx.fillRect(-blockSize, 0, blockSize, totalSize);  // 左侧条 (在地图左方)
+    ctx.fillRect(totalSize, 0, blockSize, totalSize);   // 右侧条 (在地图右方)
+
+    // 2. 然后绘制内部的墙线
     ctx.strokeStyle = MAP_COLORS.wall;
     ctx.lineWidth = 3; // 线条宽度
     ctx.lineCap = 'butt'; // 确保线条端点是平的
@@ -13,20 +27,16 @@ function renderMap(ctx, map) {
             const posX = x * GRID_SIZE;
             const posY = y * GRID_SIZE;
 
-            // 如果右侧有墙 (标志位1)
-            // 不绘制最右边一列格子的右墙（它们是右边界）
+            // 绘制右侧墙线 (标志位1)
             if ((cell & 1) && x < MAP_SIZE - 1) {
                 ctx.beginPath();
-                // 从当前格子的右上角画到右下角
                 ctx.moveTo(posX + GRID_SIZE, posY);
                 ctx.lineTo(posX + GRID_SIZE, posY + GRID_SIZE);
                 ctx.stroke();
             }
-            // 如果下侧有墙 (标志位2)
-            // 不绘制最下面一行格子的下墙（它们是下边界）
+            // 绘制下侧墙线 (标志位2)
             if ((cell & 2) && y < MAP_SIZE - 1) {
                 ctx.beginPath();
-                // 从当前格子的左下角画到右下角
                 ctx.moveTo(posX, posY + GRID_SIZE);
                 ctx.lineTo(posX + GRID_SIZE, posY + GRID_SIZE);
                 ctx.stroke();
@@ -34,140 +44,26 @@ function renderMap(ctx, map) {
         }
     }
     
-    // 绘制地图的外边界 (固定边界)，现在是带缺口的
-    // 我们需要绘制四条边，但每条边要根据传送门位置留出缺口
-    // 为了视觉效果，我们使用虚线来表示边界
-    ctx.setLineDash([10, 5]); // 设置虚线样式：10px实线，5px虚线
-    ctx.strokeStyle = MAP_COLORS.wall;
-    ctx.lineWidth = 5; // 外边界稍宽一点
+    // 3. 最后，在实心边界上绘制“传送门” (即可通行的缺口)
+    // 为了简单起见，我们可以在每个边界上随机选择一个位置作为传送门
+    // 这里我们只绘制视觉效果，实际的传送逻辑在 movePlayer 中处理
+    ctx.fillStyle = MAP_COLORS.background; // 用背景色绘制缺口，表示可通行
     
-    // 获取传送门位置（通过检查边界线是否存在来反推）
-    // 这是一个简化的推断方法，实际生成时已知
-    // 但在渲染时，我们可以通过检查边界线来确定缺口
-    // 不过，更简单的方法是在 generateMap 时就存储传送门信息
-    // 为了避免增加状态复杂度，我们在这里通过检查第一行/列和最后一行/列来推断
+    // 顶部传送门缺口 (在顶部实心条上)
+    const topGateIndex = Math.floor(Math.random() * MAP_SIZE);
+    ctx.fillRect(topGateIndex * GRID_SIZE, -blockSize, GRID_SIZE, blockSize);
     
-    // Top boundary (y=0)
-    let gapStartX = -1;
-    let gapEndX = -1;
-    for(let i = 0; i < MAP_SIZE; i++) {
-        if (!(map[0][i] & 2)) { // 如果没有下边线，则是缺口
-            if (gapStartX === -1) gapStartX = i * GRID_SIZE;
-            gapEndX = (i + 1) * GRID_SIZE;
-        }
-    }
-    if (gapStartX !== -1) {
-        // 绘制缺口左边的线段
-        if (gapStartX > 0) {
-            ctx.beginPath();
-            ctx.moveTo(0, 0);
-            ctx.lineTo(gapStartX, 0);
-            ctx.stroke();
-        }
-        // 绘制缺口右边的线段
-        if (gapEndX < MAP_SIZE * GRID_SIZE) {
-            ctx.beginPath();
-            ctx.moveTo(gapEndX, 0);
-            ctx.lineTo(MAP_SIZE * GRID_SIZE, 0);
-            ctx.stroke();
-        }
-    } else {
-        // 如果没找到缺口（理论上不应该），绘制完整边框
-        ctx.beginPath();
-        ctx.moveTo(0, 0);
-        ctx.lineTo(MAP_SIZE * GRID_SIZE, 0);
-        ctx.stroke();
-    }
-
-    // Bottom boundary (y=MAP_SIZE-1)
-    gapStartX = -1;
-    gapEndX = -1;
-    for(let i = 0; i < MAP_SIZE; i++) {
-        if (!(map[MAP_SIZE - 1][i] & 2)) {
-            if (gapStartX === -1) gapStartX = i * GRID_SIZE;
-            gapEndX = (i + 1) * GRID_SIZE;
-        }
-    }
-    if (gapStartX !== -1) {
-        if (gapStartX > 0) {
-            ctx.beginPath();
-            ctx.moveTo(0, MAP_SIZE * GRID_SIZE);
-            ctx.lineTo(gapStartX, MAP_SIZE * GRID_SIZE);
-            ctx.stroke();
-        }
-        if (gapEndX < MAP_SIZE * GRID_SIZE) {
-            ctx.beginPath();
-            ctx.moveTo(gapEndX, MAP_SIZE * GRID_SIZE);
-            ctx.lineTo(MAP_SIZE * GRID_SIZE, MAP_SIZE * GRID_SIZE);
-            ctx.stroke();
-        }
-    } else {
-        ctx.beginPath();
-        ctx.moveTo(0, MAP_SIZE * GRID_SIZE);
-        ctx.lineTo(MAP_SIZE * GRID_SIZE, MAP_SIZE * GRID_SIZE);
-        ctx.stroke();
-    }
-
-    // Left boundary (x=0)
-    let gapStartY = -1;
-    let gapEndY = -1;
-    for(let i = 0; i < MAP_SIZE; i++) {
-        if (!(map[i][0] & 1)) { // 如果没有右边线，则是缺口
-            if (gapStartY === -1) gapStartY = i * GRID_SIZE;
-            gapEndY = (i + 1) * GRID_SIZE;
-        }
-    }
-    if (gapStartY !== -1) {
-        if (gapStartY > 0) {
-            ctx.beginPath();
-            ctx.moveTo(0, 0);
-            ctx.lineTo(0, gapStartY);
-            ctx.stroke();
-        }
-        if (gapEndY < MAP_SIZE * GRID_SIZE) {
-            ctx.beginPath();
-            ctx.moveTo(0, gapEndY);
-            ctx.lineTo(0, MAP_SIZE * GRID_SIZE);
-            ctx.stroke();
-        }
-    } else {
-        ctx.beginPath();
-        ctx.moveTo(0, 0);
-        ctx.lineTo(0, MAP_SIZE * GRID_SIZE);
-        ctx.stroke();
-    }
-
-    // Right boundary (x=MAP_SIZE-1)
-    gapStartY = -1;
-    gapEndY = -1;
-    for(let i = 0; i < MAP_SIZE; i++) {
-        if (!(map[i][MAP_SIZE - 1] & 1)) {
-            if (gapStartY === -1) gapStartY = i * GRID_SIZE;
-            gapEndY = (i + 1) * GRID_SIZE;
-        }
-    }
-    if (gapStartY !== -1) {
-        if (gapStartY > 0) {
-            ctx.beginPath();
-            ctx.moveTo(MAP_SIZE * GRID_SIZE, 0);
-            ctx.lineTo(MAP_SIZE * GRID_SIZE, gapStartY);
-            ctx.stroke();
-        }
-        if (gapEndY < MAP_SIZE * GRID_SIZE) {
-            ctx.beginPath();
-            ctx.moveTo(MAP_SIZE * GRID_SIZE, gapEndY);
-            ctx.lineTo(MAP_SIZE * GRID_SIZE, MAP_SIZE * GRID_SIZE);
-            ctx.stroke();
-        }
-    } else {
-        ctx.beginPath();
-        ctx.moveTo(MAP_SIZE * GRID_SIZE, 0);
-        ctx.lineTo(MAP_SIZE * GRID_SIZE, MAP_SIZE * GRID_SIZE);
-        ctx.stroke();
-    }
+    // 底部传送门缺口 (在底部实心条上)
+    const bottomGateIndex = Math.floor(Math.random() * MAP_SIZE);
+    ctx.fillRect(bottomGateIndex * GRID_SIZE, totalSize, GRID_SIZE, blockSize);
     
-    // 重置虚线样式
-    ctx.setLineDash([]);
+    // 左侧传送门缺口 (在左侧实心条上)
+    const leftGateIndex = Math.floor(Math.random() * MAP_SIZE);
+    ctx.fillRect(-blockSize, leftGateIndex * GRID_SIZE, blockSize, GRID_SIZE);
+    
+    // 右侧传送门缺口 (在右侧实心条上)
+    const rightGateIndex = Math.floor(Math.random() * MAP_SIZE);
+    ctx.fillRect(totalSize, rightGateIndex * GRID_SIZE, blockSize, GRID_SIZE);
 }
 
 function renderEntities(ctx, cheeses, enemies, player) {

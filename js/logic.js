@@ -62,12 +62,16 @@ function movePlayer(dx, dy) {
         gameState.interactions1.playerMovedTo = { x: newX1, y: newY1 }; // 记录玩家1移动后的位置
         moved1 = true;
     } else if (gameState.gateCooldown <= 0) {
-        // 处理传送门：只有在边界时才触发传送
-        // 注意：只在实际穿过边界时才设置刷新标志
-        if (newX1 < 0) { gameState.player1.x = MAP_SIZE - 1; shouldRefreshMap1 = true; moved1 = true; gameState.interactions1.playerMovedTo = { x: gameState.player1.x, y: gameState.player1.y }; }
-        else if (newX1 >= MAP_SIZE) { gameState.player1.x = 0; shouldRefreshMap1 = true; moved1 = true; gameState.interactions1.playerMovedTo = { x: gameState.player1.x, y: gameState.player1.y }; }
-        else if (newY1 < 0) { gameState.player1.y = MAP_SIZE - 1; shouldRefreshMap1 = true; moved1 = true; gameState.interactions1.playerMovedTo = { x: gameState.player1.x, y: gameState.player1.y }; }
-        else if (newY1 >= MAP_SIZE) { gameState.player1.y = 0; shouldRefreshMap1 = true; moved1 = true; gameState.interactions1.playerMovedTo = { x: gameState.player1.x, y: gameState.player1.y }; }
+        // 处理传送门：检查是否移动到地图边界外
+        // 简化传送逻辑：任何边界外移动都触发传送和刷新
+        if (newX1 < 0 || newX1 >= MAP_SIZE || newY1 < 0 || newY1 >= MAP_SIZE) {
+             // 玩家1触发传送和地图刷新
+            gameState.player1.x = (newX1 < 0) ? MAP_SIZE - 1 : (newX1 >= MAP_SIZE ? 0 : gameState.player1.x);
+            gameState.player1.y = (newY1 < 0) ? MAP_SIZE - 1 : (newY1 >= MAP_SIZE ? 0 : gameState.player1.y);
+            shouldRefreshMap1 = true;
+            gameState.interactions1.playerMovedTo = { x: gameState.player1.x, y: gameState.player1.y };
+            moved1 = true;
+        }
     }
 
     // Player 2 移动逻辑
@@ -81,10 +85,15 @@ function movePlayer(dx, dy) {
         gameState.interactions2.playerMovedTo = { x: newX2, y: newY2 }; // 记录玩家2移动后的位置
         moved2 = true;
     } else if (gameState.gateCooldown <= 0) {
-         if (newX2 < 0) { gameState.player2.x = MAP_SIZE - 1; shouldRefreshMap2 = true; moved2 = true; gameState.interactions2.playerMovedTo = { x: gameState.player2.x, y: gameState.player2.y }; }
-        else if (newX2 >= MAP_SIZE) { gameState.player2.x = 0; shouldRefreshMap2 = true; moved2 = true; gameState.interactions2.playerMovedTo = { x: gameState.player2.x, y: gameState.player2.y }; }
-        else if (newY2 < 0) { gameState.player2.y = MAP_SIZE - 1; shouldRefreshMap2 = true; moved2 = true; gameState.interactions2.playerMovedTo = { x: gameState.player2.x, y: gameState.player2.y }; }
-        else if (newY2 >= MAP_SIZE) { gameState.player2.y = 0; shouldRefreshMap2 = true; moved2 = true; gameState.interactions2.playerMovedTo = { x: gameState.player2.x, y: gameState.player2.y }; }
+        // 处理传送门：检查是否移动到地图边界外
+        if (newX2 < 0 || newX2 >= MAP_SIZE || newY2 < 0 || newY2 >= MAP_SIZE) {
+            // 玩家2触发传送和地图刷新
+            gameState.player2.x = (newX2 < 0) ? MAP_SIZE - 1 : (newX2 >= MAP_SIZE ? 0 : gameState.player2.x);
+            gameState.player2.y = (newY2 < 0) ? MAP_SIZE - 1 : (newY2 >= MAP_SIZE ? 0 : gameState.player2.y);
+            shouldRefreshMap2 = true;
+            gameState.interactions2.playerMovedTo = { x: gameState.player2.x, y: gameState.player2.y };
+            moved2 = true;
+       }
     }
 
     // 如果任一地图需要刷新，则执行刷新

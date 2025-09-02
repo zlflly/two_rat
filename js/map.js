@@ -1,57 +1,44 @@
 // --- 地图和对象生成 ---
 // 地图现在存储线的信息，而不是填充的格子。
 // 0: 无墙, 1: 右侧有墙, 2: 下侧有墙, 3: 右侧和下侧都有墙
-// 地图生成时随机确定一个传送门位置
+// 为了实现“实心紫色方块作为最外圈”的视觉效果和传送门，
+// 我们不将边界作为墙线存储在地图数据中。
+// 地图数据仅表示内部的墙线。
+// 传送门的逻辑和渲染将单独处理。
 function generateMap() {
     const map = [];
-    // 随机选择一个边界作为传送门
-    const gateSide = Math.floor(Math.random() * 4); // 0: top, 1: right, 2: bottom, 3: left
-    const gateIndex = Math.floor(Math.random() * MAP_SIZE); // 传送门在边界上的索引
-
+    
     for (let y = 0; y < MAP_SIZE; y++) {
         map[y] = [];
         for (let x = 0; x < MAP_SIZE; x++) {
             let cell = 0;
             
-            // 生成内部随机墙线
-            if (x < MAP_SIZE - 1) { // 右侧边界线单独处理
+            // 生成内部随机墙线 (不包括最外圈)
+            if (x < MAP_SIZE - 1 && y < MAP_SIZE - 1) { // 只在内部格子生成墙线
                 if (Math.random() < 0.15) {
                     cell |= 1; // 设置右侧墙的标志位
                 }
-            }
-            if (y < MAP_SIZE - 1) { // 下侧边界线单独处理
                 if (Math.random() < 0.15) {
                     cell |= 2; // 设置下侧墙的标志位
                 }
+            } else if (x < MAP_SIZE - 1 && y === MAP_SIZE - 1) { // 最下面一行，只生成右侧墙线
+                if (Math.random() < 0.15) {
+                    cell |= 1;
+                }
+            } else if (y < MAP_SIZE - 1 && x === MAP_SIZE - 1) { // 最右边一列，只生成下侧墙线
+                if (Math.random() < 0.15) {
+                    cell |= 2;
+                }
             }
+            // (MAP_SIZE-1, MAP_SIZE-1) 格子不生成任何内部墙线
             
             map[y][x] = cell;
         }
     }
 
-    // 绘制地图外边界，但为传送门留出一个缺口
-    for (let i = 0; i < MAP_SIZE; i++) {
-        // Top boundary (y=0)
-        // 对于顶部边界，墙线存储在第0行的格子的下侧 (flag 2)
-        if (gateSide !== 0 || i !== gateIndex) {
-            map[0][i] |= 2; // 设置上边框线 (当前格子的下边线)
-        }
-        // Bottom boundary (y=MAP_SIZE-1)
-        // 对于底部边界，墙线存储在倒数第二行的格子的下侧 (flag 2)
-        if (gateSide !== 2 || i !== gateIndex) {
-             map[MAP_SIZE - 1][i] |= 2; // 设置下边框线 (当前格子的下边线)
-        }
-        // Left boundary (x=0)
-        // 对于左侧边界，墙线存储在第0列的格子的右侧 (flag 1)
-        if (gateSide !== 3 || i !== gateIndex) {
-             map[i][0] |= 1; // 设置左边框线 (当前格子的右边线)
-        }
-        // Right boundary (x=MAP_SIZE-1)
-        // 对于右侧边界，墙线存储在倒数第二列的格子的右侧 (flag 1)
-        if (gateSide !== 1 || i !== gateIndex) {
-             map[i][MAP_SIZE - 1] |= 1; // 设置右边框线 (当前格子的右边线)
-        }
-    }
+    // 不再在地图数据中存储边界墙线
+    // 传送门逻辑将在 movePlayer 中通过坐标检查处理
+    // 边界渲染将在 renderMap 中通过绘制实心方块实现
 
     return map;
 }
