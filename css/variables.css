@@ -1,0 +1,14 @@
+:root {
+    /* 主色调 - 暗紫色 */
+    --primary-bg: #2c0e35;
+    --primary-bg-dark: #1a0820;
+    --primary-border: #5d356b;
+    --primary-text: #d8bfd8;
+    /* 元素颜色 */
+    --player-color: #d8bfd8; /* 亮紫色 */
+    --wall-color: #5d356b;   /* 深紫色 */
+    --cheese-color: #f5b542; /* 奶酪黄 */
+    --enemy-color: #ff6666;  /* 怪物红 */
+    --ui-bg: #5d356b;
+    --ui-text: #fff;
+}

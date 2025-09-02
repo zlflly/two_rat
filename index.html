@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>双鼠探险家</title>
+    <link rel="stylesheet" href="css/variables.css">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <h1>双鼠探险家</h1>
+    
+    <div id="game-ui-container">
+        <div id="ui-container">
+            <div class="status-bar">积分: <span id="score">0</span></div>
+            <div class="status-bar">血量: <span id="health"></span></div>
+        </div>
+        
+        <div id="game-container">
+            <canvas id="canvas1" class="game-canvas" width="450" height="450"></canvas>
+            <canvas id="canvas2" class="game-canvas" width="450" height="450"></canvas>
+        </div>
+    </div>
+
+    <div id="message-box">
+        <h2 id="message-text"></h2>
+        <div id="message-content"></div>
+        <div class="button-group">
+            <button id="gemini-tip-button" style="display: none;">获取游戏小贴士 ✨</button>
+            <button id="message-button">重新开始</button>
+        </div>
+        <div id="spinner"></div>
+    </div>
+
+    <script src="js/constants.js"></script>
+    <script src="js/state.js"></script>
+    <script src="js/map.js"></script>
+    <script src="js/entities.js"></script>
+    <script src="js/render.js"></script>
+    <script src="js/logic.js"></script>
+    <script src="js/ui.js"></script>
+    <script src="js/input.js"></script>
+    <script src="js/main.js"></script>
+</body>
+</html>

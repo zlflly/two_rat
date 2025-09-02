@@ -1,0 +1,157 @@
+body {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    margin: 0;
+    background-color: var(--primary-bg);
+    color: var(--primary-text);
+    font-family: 'Courier New', monospace; /* 像素字体 */
+    overflow: hidden;
+    padding: 10px;
+}
+
+h1 {
+    color: var(--primary-text);
+    text-shadow: 2px 2px 4px #000;
+    text-align: center;
+    margin-bottom: 15px;
+    font-size: 2em;
+}
+
+#game-ui-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 15px;
+    width: 100%;
+    max-width: 900px; /* 限制最大宽度 */
+}
+
+#ui-container {
+    display: flex;
+    justify-content: space-around;
+    width: 100%;
+}
+
+.status-bar {
+    background-color: var(--ui-bg);
+    color: var(--ui-text);
+    padding: 8px 15px;
+    border-radius: 8px;
+    min-width: 150px;
+    text-align: center;
+    font-size: 1.2em;
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.5);
+}
+
+#game-container {
+    display: flex;
+    justify-content: center;
+    gap: 30px; /* 增大地图间距 */
+    width: 100%;
+    max-width: 900px; /* 限制最大宽度 */
+}
+
+.game-canvas {
+    border: 3px solid var(--primary-border);
+    background-color: var(--primary-bg-dark);
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.7);
+    /* 保持正方形 */
+    width: 450px;
+    height: 450px;
+}
+
+#message-box {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: rgba(44, 14, 53, 0.95);
+    border: 3px solid var(--primary-text);
+    color: var(--primary-text);
+    padding: 30px;
+    border-radius: 10px;
+    text-align: center;
+    z-index: 100;
+    display: none;
+    box-shadow: 0 0 30px rgba(0, 0, 0, 0.9);
+    width: 80%;
+    max-width: 500px;
+}
+
+#message-box h2 {
+    margin-bottom: 15px;
+    font-size: 1.8em;
+}
+
+#message-content {
+    margin-bottom: 20px;
+    font-size: 1.2em;
+}
+
+#message-box .button-group {
+    display: flex;
+    gap: 15px;
+    justify-content: center;
+}
+
+#message-box button {
+    background-color: var(--ui-bg);
+    color: var(--ui-text);
+    border: none;
+    padding: 12px 25px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s;
+    font-size: 1em;
+    font-family: inherit;
+}
+
+#message-box button:hover {
+    background-color: #a47bbd;
+    transform: translateY(-2px);
+}
+
+#message-box button:active {
+    transform: translateY(1px);
+}
+
+#spinner {
+    border: 4px solid rgba(255, 255, 255, 0.3);
+    border-top: 4px solid var(--primary-text);
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    animation: spin 1s linear infinite;
+    margin: 20px auto 0;
+    display: none;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+    h1 {
+        font-size: 1.5em;
+    }
+    .game-canvas {
+        width: 90vw; /* 在小屏幕上使用视口宽度 */
+        height: 90vw;
+    }
+    #game-container {
+        flex-direction: column;
+        align-items: center;
+        gap: 20px;
+    }
+    .status-bar {
+        font-size: 1em;
+        padding: 6px 10px;
+        min-width: 120px;
+    }
+}
