@@ -46,8 +46,8 @@ function gameLoop() {
         if (gameState.gateCooldown < 0) gameState.gateCooldown = 0;
     }
 
-    render(ctx1, gameState.map1, gameState.player1, gameState.cheeses1, gameState.enemies1);
-    render(ctx2, gameState.map2, gameState.player2, gameState.cheeses2, gameState.enemies2);
+    render(ctx1, gameState.map1, gameState.player1, gameState.cheeses1, gameState.enemies1, gameState.gatePositions1);
+    render(ctx2, gameState.map2, gameState.player2, gameState.cheeses2, gameState.enemies2, gameState.gatePositions2);
     
     // 不再在循环中调用 renderUI，因为它在 handleGameLogic 中被调用
 

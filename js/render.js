@@ -1,5 +1,5 @@
 // --- 渲染 ---
-function renderMap(ctx, map) {
+function renderMap(ctx, map, gatePositions) {
     ctx.fillStyle = MAP_COLORS.background;
     ctx.fillRect(0, 0, canvas1.width, canvas1.height);
 
@@ -44,26 +44,97 @@ function renderMap(ctx, map) {
         }
     }
     
-    // 3. 最后，在实心边界上绘制“传送门” (即可通行的缺口)
-    // 为了简单起见，我们可以在每个边界上随机选择一个位置作为传送门
-    // 这里我们只绘制视觉效果，实际的传送逻辑在 movePlayer 中处理
+    // 3. 最后，在实心边界上绘制"传送门" (即可通行的缺口)
+    // 使用实际的传送门位置数据
     ctx.fillStyle = MAP_COLORS.background; // 用背景色绘制缺口，表示可通行
     
     // 顶部传送门缺口 (在顶部实心条上)
-    const topGateIndex = Math.floor(Math.random() * MAP_SIZE);
-    ctx.fillRect(topGateIndex * GRID_SIZE, -blockSize, GRID_SIZE, blockSize);
+    ctx.fillRect(gatePositions.top * GRID_SIZE, -blockSize, GRID_SIZE, blockSize);
     
     // 底部传送门缺口 (在底部实心条上)
-    const bottomGateIndex = Math.floor(Math.random() * MAP_SIZE);
-    ctx.fillRect(bottomGateIndex * GRID_SIZE, totalSize, GRID_SIZE, blockSize);
+    ctx.fillRect(gatePositions.bottom * GRID_SIZE, totalSize, GRID_SIZE, blockSize);
     
     // 左侧传送门缺口 (在左侧实心条上)
-    const leftGateIndex = Math.floor(Math.random() * MAP_SIZE);
-    ctx.fillRect(-blockSize, leftGateIndex * GRID_SIZE, blockSize, GRID_SIZE);
+    ctx.fillRect(-blockSize, gatePositions.left * GRID_SIZE, blockSize, GRID_SIZE);
     
     // 右侧传送门缺口 (在右侧实心条上)
-    const rightGateIndex = Math.floor(Math.random() * MAP_SIZE);
-    ctx.fillRect(totalSize, rightGateIndex * GRID_SIZE, blockSize, GRID_SIZE);
+    ctx.fillRect(totalSize, gatePositions.right * GRID_SIZE, blockSize, GRID_SIZE);
+    
+    // 5. 在地图外添加发光箭头标记传送门位置
+    renderGateArrows(ctx, gatePositions);
+}
+
+// 渲染发光箭头标记传送门位置
+function renderGateArrows(ctx, gatePositions) {
+    const currentTime = Date.now();
+    const pulseIntensity = 0.5 + 0.5 * Math.sin(currentTime * 0.005); // 脉动效果
+    
+    const arrowSize = 15;
+    const offset = 35; // 箭头距离地图边界的距离
+    
+    // 保存当前绘图状态
+    ctx.save();
+    
+    // 设置发光效果
+    ctx.shadowBlur = 10;
+    ctx.shadowColor = `rgba(0, 255, 0, ${pulseIntensity})`;
+    ctx.fillStyle = `rgba(0, 255, 0, ${0.8 + 0.2 * pulseIntensity})`;
+    
+    // 顶部箭头 (指向下方)
+    const topX = gatePositions.top * GRID_SIZE + GRID_SIZE / 2;
+    const topY = -offset;
+    drawArrow(ctx, topX, topY, arrowSize, 'down');
+    
+    // 底部箭头 (指向上方)
+    const bottomX = gatePositions.bottom * GRID_SIZE + GRID_SIZE / 2;
+    const bottomY = MAP_SIZE * GRID_SIZE + offset;
+    drawArrow(ctx, bottomX, bottomY, arrowSize, 'up');
+    
+    // 左侧箭头 (指向右方)
+    const leftX = -offset;
+    const leftY = gatePositions.left * GRID_SIZE + GRID_SIZE / 2;
+    drawArrow(ctx, leftX, leftY, arrowSize, 'right');
+    
+    // 右侧箭头 (指向左方)
+    const rightX = MAP_SIZE * GRID_SIZE + offset;
+    const rightY = gatePositions.right * GRID_SIZE + GRID_SIZE / 2;
+    drawArrow(ctx, rightX, rightY, arrowSize, 'left');
+    
+    // 恢复绘图状态
+    ctx.restore();
+}
+
+// 绘制箭头
+function drawArrow(ctx, x, y, size, direction) {
+    ctx.beginPath();
+    
+    const halfSize = size / 2;
+    
+    switch (direction) {
+        case 'down':
+            ctx.moveTo(x, y + halfSize);
+            ctx.lineTo(x - halfSize, y - halfSize);
+            ctx.lineTo(x + halfSize, y - halfSize);
+            break;
+        case 'up':
+            ctx.moveTo(x, y - halfSize);
+            ctx.lineTo(x - halfSize, y + halfSize);
+            ctx.lineTo(x + halfSize, y + halfSize);
+            break;
+        case 'right':
+            ctx.moveTo(x + halfSize, y);
+            ctx.lineTo(x - halfSize, y - halfSize);
+            ctx.lineTo(x - halfSize, y + halfSize);
+            break;
+        case 'left':
+            ctx.moveTo(x - halfSize, y);
+            ctx.lineTo(x + halfSize, y - halfSize);
+            ctx.lineTo(x + halfSize, y + halfSize);
+            break;
+    }
+    
+    ctx.closePath();
+    ctx.fill();
 }
 
 function renderEntities(ctx, cheeses, enemies, player) {
@@ -111,8 +182,8 @@ function renderEntities(ctx, cheeses, enemies, player) {
     ctx.fill();
 }
 
-function render(ctx, map, player, cheeses, enemies) {
-    renderMap(ctx, map);
+function render(ctx, map, player, cheeses, enemies, gatePositions) {
+    renderMap(ctx, map, gatePositions);
     renderEntities(ctx, cheeses, enemies, player);
 }
 

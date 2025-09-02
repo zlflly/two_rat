@@ -1,7 +1,11 @@
 // --- 游戏逻辑 ---
 function startGame() {
-    gameState.map1 = generateMap();
-    gameState.map2 = generateMap();
+    // 先生成传送门位置
+    gameState.gatePositions1 = generateGatePositions();
+    gameState.gatePositions2 = generateGatePositions();
+    // 然后根据传送门位置生成地图
+    gameState.map1 = generateMap(gameState.gatePositions1);
+    gameState.map2 = generateMap(gameState.gatePositions2);
     // 生成对象时传入地图，确保不生成在墙上
     gameState.cheeses1 = generateCheeses(gameState.map1);
     gameState.cheeses2 = generateCheeses(gameState.map2);
@@ -27,8 +31,12 @@ function resetGame() {
 }
 
 function refreshMaps() {
-    gameState.map1 = generateMap();
-    gameState.map2 = generateMap();
+    // 先刷新传送门位置
+    gameState.gatePositions1 = generateGatePositions();
+    gameState.gatePositions2 = generateGatePositions();
+    // 然后根据传送门位置生成地图
+    gameState.map1 = generateMap(gameState.gatePositions1);
+    gameState.map2 = generateMap(gameState.gatePositions2);
     // 刷新地图时也刷新对象，并传入新地图
     gameState.cheeses1 = generateCheeses(gameState.map1);
     gameState.cheeses2 = generateCheeses(gameState.map2);
@@ -62,14 +70,16 @@ function movePlayer(dx, dy) {
         gameState.interactions1.playerMovedTo = { x: newX1, y: newY1 }; // 记录玩家1移动后的位置
         moved1 = true;
     } else if (gameState.gateCooldown <= 0) {
-        // 处理传送门：检查是否移动到地图边界外
-        // 简化传送逻辑：任何边界外移动都触发传送和刷新
-        if (newX1 < 0 || newX1 >= MAP_SIZE || newY1 < 0 || newY1 >= MAP_SIZE) {
-             // 玩家1触发传送和地图刷新
-            gameState.player1.x = (newX1 < 0) ? MAP_SIZE - 1 : (newX1 >= MAP_SIZE ? 0 : gameState.player1.x);
-            gameState.player1.y = (newY1 < 0) ? MAP_SIZE - 1 : (newY1 >= MAP_SIZE ? 0 : gameState.player1.y);
+        // 处理传送门：检查是否可以通过传送门传送
+        const teleportTarget = canTeleportAndGetTarget(
+            gameState.player1.x, gameState.player1.y, dx, dy, gameState.gatePositions1
+        );
+        if (teleportTarget) {
+            // 玩家1成功传送
+            gameState.player1.x = teleportTarget.x;
+            gameState.player1.y = teleportTarget.y;
             shouldRefreshMap1 = true;
-            gameState.interactions1.playerMovedTo = { x: gameState.player1.x, y: gameState.player1.y };
+            gameState.interactions1.playerMovedTo = { x: teleportTarget.x, y: teleportTarget.y };
             moved1 = true;
         }
     }
@@ -85,32 +95,37 @@ function movePlayer(dx, dy) {
         gameState.interactions2.playerMovedTo = { x: newX2, y: newY2 }; // 记录玩家2移动后的位置
         moved2 = true;
     } else if (gameState.gateCooldown <= 0) {
-        // 处理传送门：检查是否移动到地图边界外
-        if (newX2 < 0 || newX2 >= MAP_SIZE || newY2 < 0 || newY2 >= MAP_SIZE) {
-            // 玩家2触发传送和地图刷新
-            gameState.player2.x = (newX2 < 0) ? MAP_SIZE - 1 : (newX2 >= MAP_SIZE ? 0 : gameState.player2.x);
-            gameState.player2.y = (newY2 < 0) ? MAP_SIZE - 1 : (newY2 >= MAP_SIZE ? 0 : gameState.player2.y);
+        // 处理传送门：检查是否可以通过传送门传送
+        const teleportTarget = canTeleportAndGetTarget(
+            gameState.player2.x, gameState.player2.y, dx, dy, gameState.gatePositions2
+        );
+        if (teleportTarget) {
+            // 玩家2成功传送
+            gameState.player2.x = teleportTarget.x;
+            gameState.player2.y = teleportTarget.y;
             shouldRefreshMap2 = true;
-            gameState.interactions2.playerMovedTo = { x: gameState.player2.x, y: gameState.player2.y };
+            gameState.interactions2.playerMovedTo = { x: teleportTarget.x, y: teleportTarget.y };
             moved2 = true;
-       }
+        }
     }
 
     // 如果任一地图需要刷新，则执行刷新
     if (shouldRefreshMap1 || shouldRefreshMap2) {
         if (shouldRefreshMap1) {
-            gameState.map1 = generateMap();
+            gameState.gatePositions1 = generateGatePositions();
+            gameState.map1 = generateMap(gameState.gatePositions1);
             gameState.cheeses1 = generateCheeses(gameState.map1);
             gameState.enemies1 = generateEnemies(gameState.map1);
         }
         if (shouldRefreshMap2) {
-            gameState.map2 = generateMap();
+            gameState.gatePositions2 = generateGatePositions();
+            gameState.map2 = generateMap(gameState.gatePositions2);
             gameState.cheeses2 = generateCheeses(gameState.map2);
             gameState.enemies2 = generateEnemies(gameState.map2);
         }
         // 刷新地图后需要重绘
-        render(ctx1, gameState.map1, gameState.player1, gameState.cheeses1, gameState.enemies1);
-        render(ctx2, gameState.map2, gameState.player2, gameState.cheeses2, gameState.enemies2);
+        render(ctx1, gameState.map1, gameState.player1, gameState.cheeses1, gameState.enemies1, gameState.gatePositions1);
+        render(ctx2, gameState.map2, gameState.player2, gameState.cheeses2, gameState.enemies2, gameState.gatePositions2);
         renderUI(); // 更新UI
     }
 
