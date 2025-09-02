@@ -1,7 +1,5 @@
 // --- 渲染 ---
 function renderMap(ctx, map, gatePositions) {
-    ctx.fillStyle = MAP_COLORS.background;
-    ctx.fillRect(0, 0, canvas1.width, canvas1.height);
 
     // 1. 首先绘制实心的紫色边界方块，作为不可通行区域
     ctx.fillStyle = MAP_COLORS.wall; // 使用墙的颜色
@@ -154,37 +152,37 @@ function renderEntities(ctx, cheeses, enemies, player) {
 
     // 绘制敌人
     enemies.forEach(enemy => {
-        ctx.fillStyle = MAP_COLORS.enemy;
-        // 绘制一个稍微圆润的矩形代表敌人
-        ctx.beginPath();
-        const radius = GRID_SIZE / 4;
-        ctx.roundRect(
-            enemy.x * GRID_SIZE + radius,
-            enemy.y * GRID_SIZE + radius,
-            GRID_SIZE - 2 * radius,
-            GRID_SIZE - 2 * radius,
-            radius
-        );
-        ctx.fill();
+        ctx.font = `${GRID_SIZE * 0.8}px sans-serif`;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText('🐍', enemy.x * GRID_SIZE + GRID_SIZE / 2, enemy.y * GRID_SIZE + GRID_SIZE / 2);
     });
 
     // 绘制玩家 (小鼠)
-    ctx.fillStyle = MAP_COLORS.player;
-    // 绘制一个圆形代表小鼠
-    ctx.beginPath();
-    ctx.arc(
-        player.x * GRID_SIZE + GRID_SIZE / 2,
-        player.y * GRID_SIZE + GRID_SIZE / 2,
-        GRID_SIZE / 3,
-        0,
-        Math.PI * 2
-    );
-    ctx.fill();
+    ctx.font = `${GRID_SIZE * 0.8}px sans-serif`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('🐁', player.x * GRID_SIZE + GRID_SIZE / 2, player.y * GRID_SIZE + GRID_SIZE / 2);
 }
 
 function render(ctx, map, player, cheeses, enemies, gatePositions) {
+    // 清除整个画布
+    ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+
+    // 填充背景色
+    ctx.fillStyle = MAP_COLORS.background;
+    ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+
+    // 保存当前状态并移动画布原点到中心
+    ctx.save();
+    const offset = (ctx.canvas.width - MAP_SIZE * GRID_SIZE) / 2;
+    ctx.translate(offset, offset);
+
     renderMap(ctx, map, gatePositions);
     renderEntities(ctx, cheeses, enemies, player);
+
+    // 恢复画布状态
+    ctx.restore();
 }
 
 function renderUI() {
